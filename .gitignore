@@ -1,2 +1,5 @@
 /.vscode
 main
+/test
+gmon.out
+backup

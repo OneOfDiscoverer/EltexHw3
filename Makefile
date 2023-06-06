@@ -1,14 +1,14 @@
 BIN := main
-SOURCES := main.c
-HEADERS := main.h
-CFLAGS := -g 
+SOURCES := main.c 
+HEADERS := main.h 
+CFLAGS := -g
 LDFLAGS :=
 
 CC := gcc
 
 .PHONY: clean
 
-all: $(BIN) 
+all: clean $(BIN) 
 
 $LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
 
