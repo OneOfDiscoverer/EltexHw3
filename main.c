@@ -37,7 +37,9 @@ void stopit(void){
 }
 
 int main(int argc, char* argv[]){
-    int fd = 0, x = 0, y = 0, sz, maxsz;
+    int fd = 0, x = 0, y = 0, sz, maxsz, lstline = 0;
+    int start = 0, end = 0;
+
     char buf[4095], inbuf[3];
 
     atexit(stopit);
@@ -48,7 +50,15 @@ int main(int argc, char* argv[]){
         if(fd != -1){
             maxsz = sz = read(fd, buf, sizeof buf);
             write(STDOUT_FILENO, "\e[2J\e[H", 8);
-            write(STDOUT_FILENO, buf, sz);  
+            end = sz;
+            int cnt = 0;
+            while((buf[end++] != '\n') && (end < maxsz));
+            start = --end; 
+            while((start > 0) && (cnt < 25)){
+                if(buf[start--] == '\n')
+                    cnt++;
+            }
+            write(STDERR_FILENO, &buf[start], end - start);
         }
         else {
             write(STDERR_FILENO, "can't open\n", 12);
@@ -80,7 +90,8 @@ int main(int argc, char* argv[]){
                             if(sz < maxsz) sz++;
                             break;
                         case 65: //up
-                            while(buf[sz--] != '\n' && sz > 0);
+                            if(sz > 0)
+                                while(buf[sz--] != '\n' && sz > 0);
                             break;
                         case 66: //down
                             if(sz < maxsz)
@@ -106,10 +117,36 @@ int main(int argc, char* argv[]){
                     maxsz = sz;
                 break;
         }
-
+        
         write(STDOUT_FILENO, "\e[2J\e[H", 8);
-        write(STDOUT_FILENO, buf, maxsz);
-        setCursor(sz, buf);
+
+        if(start < 0) 
+            start = 0;
+        
+        if(sz < start ) {
+            start = sz;
+            int cnt = 0;
+            while((buf[start--] != '\n') && (start > 0));
+            end = ++start;
+            while((end < maxsz) && (cnt < 25)){
+                if(buf[end++] == '\n')
+                    cnt++;
+            }
+            
+        }
+
+        else if(sz > end) {
+            end = sz;
+            int cnt = 0;
+            while((buf[end++] != '\n') && (end < maxsz));
+            start = --end; 
+            while((start > 0) && (cnt < 25)){
+                if(buf[start--] == '\n')
+                    cnt++;
+            }
+        }
+        write(STDERR_FILENO, &buf[start], end - start);
+        setCursor(sz - start, &buf[start]);
     }    
     return 0;
 }
